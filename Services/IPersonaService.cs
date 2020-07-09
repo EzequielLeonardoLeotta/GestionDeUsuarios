@@ -6,9 +6,9 @@ namespace GestionDeUsuarios.Services
 {
   public interface IPersonaService
   {
-    Task<Persona> GetFirst();
-    Task<List<Persona>> GetAllPersons();
-    Task<Persona> GetPersonByDni(string dni);
-    Task<List<Persona>> AddPerson(Persona persona);
+    Task<ServiceResponse<Persona>> GetFirst();
+    Task<ServiceResponse<List<Persona>>> GetAllPersons();
+    Task<ServiceResponse<Persona>> GetPersonByDni(string dni);
+    Task<ServiceResponse<List<Persona>>> AddPerson(Persona persona);
   }
 }

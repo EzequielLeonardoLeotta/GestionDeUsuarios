@@ -9,24 +9,32 @@ namespace GestionDeUsuarios.Services
   {
     private static List<Persona> personas = new List<Persona> { new Persona(), new Persona { Nombre = "Juan", Documento = "123" } };
 
-    public async Task<Persona> GetFirst()
+    public async Task<ServiceResponse<Persona>> GetFirst()
     {
-      return personas[0];
+      ServiceResponse<Persona> serviceResponse = new ServiceResponse<Persona>();
+      serviceResponse.Data = personas[0];
+      return serviceResponse;
     }
 
-    public async Task<List<Persona>> GetAllPersons()
+    public async Task<ServiceResponse<List<Persona>>> GetAllPersons()
     {
-      return personas;
+      ServiceResponse<List<Persona>> serviceResponse = new ServiceResponse<List<Persona>>();
+      serviceResponse.Data = personas;
+      return serviceResponse;
     }
 
-    public async Task<Persona> GetPersonByDni(string documento)
+    public async Task<ServiceResponse<Persona>> GetPersonByDni(string documento)
     {
-      return personas.FirstOrDefault(p => p.Documento == documento);
+      ServiceResponse<Persona> serviceResponse = new ServiceResponse<Persona>();
+      serviceResponse.Data = personas.FirstOrDefault(p => p.Documento == documento);
+      return serviceResponse;
     }
-    public async Task<List<Persona>> AddPerson(Persona persona)
+    public async Task<ServiceResponse<List<Persona>>> AddPerson(Persona persona)
     {
+      ServiceResponse<List<Persona>> serviceResponse = new ServiceResponse<List<Persona>>();
       personas.Add(persona);
-      return personas;
+      serviceResponse.Data = personas;
+      return serviceResponse;
     }
   }
 }
