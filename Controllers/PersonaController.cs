@@ -1,7 +1,6 @@
 ﻿using GestionDeUsuarios.Models;
+using GestionDeUsuarios.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace GestionDeUsuarios.Controllers
 {
@@ -9,31 +8,35 @@ namespace GestionDeUsuarios.Controllers
   [Route("api/v1/[controller]")]
   public class PersonaController : ControllerBase
   {
-    private static List<Persona> personas = new List<Persona> {new Persona(), new Persona { Nombre = "Juan", Documento = "123" } };
+    private readonly IPersonaService _personaService;
+
+    public PersonaController(IPersonaService personaService)
+    {
+      _personaService = personaService;
+    }
 
     [HttpGet("GetFirst")]
     public IActionResult GetFirst()
     {
-      return Ok(personas[0]);
+      return Ok(_personaService.GetFirst());
     }
 
     [HttpGet("GetAll")]
-    public IActionResult GetAll()
+    public IActionResult GetAllPersons()
     {
-      return Ok(personas);
+      return Ok(_personaService.GetAllPersons());
     }
 
     [HttpGet("{documento}")]
-    public IActionResult GetSingle(string documento)
+    public IActionResult GetPersonByDni(string documento)
     {
-      return Ok(personas.FirstOrDefault(p => p.Documento == documento));
+      return Ok(_personaService.GetPersonByDni(documento));
     }
 
     [HttpPost]
-    public IActionResult AddCharacter(Persona persona) 
+    public IActionResult AddPerson(Persona persona) 
     {
-      personas.Add(persona);
-      return Ok(personas);
+      return Ok(_personaService.AddPerson(persona));
     }
   }
 }

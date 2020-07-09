@@ -1,3 +1,4 @@
+using GestionDeUsuarios.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -17,6 +18,7 @@ namespace GestionDeUsuarios
     public void ConfigureServices(IServiceCollection services)
     {
       services.AddControllers();
+      services.AddSingleton<IPersonaService, PersonaService>();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
