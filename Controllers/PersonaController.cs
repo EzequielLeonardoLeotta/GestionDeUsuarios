@@ -1,6 +1,7 @@
 ﻿using GestionDeUsuarios.Models;
 using GestionDeUsuarios.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace GestionDeUsuarios.Controllers
 {
@@ -16,27 +17,27 @@ namespace GestionDeUsuarios.Controllers
     }
 
     [HttpGet("GetFirst")]
-    public IActionResult GetFirst()
+    public async Task<IActionResult> GetFirst()
     {
-      return Ok(_personaService.GetFirst());
+      return Ok(await _personaService.GetFirst());
     }
 
-    [HttpGet("GetAll")]
-    public IActionResult GetAllPersons()
+    [HttpGet("GetAllPersons")]
+    public async Task<IActionResult> GetAllPersons()
     {
-      return Ok(_personaService.GetAllPersons());
+      return Ok(await _personaService.GetAllPersons());
     }
 
     [HttpGet("{documento}")]
-    public IActionResult GetPersonByDni(string documento)
+    public async Task<IActionResult> GetPersonByDni(string documento)
     {
-      return Ok(_personaService.GetPersonByDni(documento));
+      return Ok(await _personaService.GetPersonByDni(documento));
     }
 
     [HttpPost]
-    public IActionResult AddPerson(Persona persona) 
+    public async Task<IActionResult> AddPerson(Persona persona) 
     {
-      return Ok(_personaService.AddPerson(persona));
+      return Ok(await _personaService.AddPerson(persona));
     }
   }
 }

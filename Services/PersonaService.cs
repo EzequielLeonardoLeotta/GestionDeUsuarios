@@ -1,6 +1,7 @@
 ﻿using GestionDeUsuarios.Models;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace GestionDeUsuarios.Services
 {
@@ -8,21 +9,21 @@ namespace GestionDeUsuarios.Services
   {
     private static List<Persona> personas = new List<Persona> { new Persona(), new Persona { Nombre = "Juan", Documento = "123" } };
 
-    public Persona GetFirst()
+    public async Task<Persona> GetFirst()
     {
       return personas[0];
     }
 
-    public List<Persona> GetAllPersons()
+    public async Task<List<Persona>> GetAllPersons()
     {
       return personas;
     }
 
-    public Persona GetPersonByDni(string documento)
+    public async Task<Persona> GetPersonByDni(string documento)
     {
       return personas.FirstOrDefault(p => p.Documento == documento);
     }
-    public List<Persona> AddPerson(Persona persona)
+    public async Task<List<Persona>> AddPerson(Persona persona)
     {
       personas.Add(persona);
       return personas;
