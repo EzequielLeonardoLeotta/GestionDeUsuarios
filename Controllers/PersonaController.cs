@@ -1,6 +1,8 @@
-﻿using GestionDeUsuarios.Models;
+﻿using GestionDeUsuarios.Dtos;
+using GestionDeUsuarios.Models;
 using GestionDeUsuarios.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace GestionDeUsuarios.Controllers
@@ -16,12 +18,6 @@ namespace GestionDeUsuarios.Controllers
       _personaService = personaService;
     }
 
-    [HttpGet("GetFirst")]
-    public async Task<IActionResult> GetFirst()
-    {
-      return Ok(await _personaService.GetFirst());
-    }
-
     [HttpGet("GetAllPersons")]
     public async Task<IActionResult> GetAllPersons()
     {
@@ -35,9 +31,31 @@ namespace GestionDeUsuarios.Controllers
     }
 
     [HttpPost]
-    public async Task<IActionResult> AddPerson(Persona persona) 
+    public async Task<IActionResult> AddPerson(PersonaDto persona)
     {
       return Ok(await _personaService.AddPerson(persona));
+    }
+
+    [HttpPut]
+    public async Task<IActionResult> UpdatePerson(UpdatePersonDto persona)
+    {
+      ServiceResponse<PersonaDto> response = await _personaService.UpdatePerson(persona);
+      if (response.Data == null)
+      {
+        return NotFound(response);
+      }
+      return Ok(response);
+    }
+
+    [HttpDelete("{documento}")]
+    public async Task<IActionResult> DeletePerson(string documento)
+    {
+      ServiceResponse<List<PersonaDto>> response = await _personaService.DeletePerson(documento);
+      if (response.Data == null)
+      {
+        return NotFound(response);
+      }
+      return Ok(response);
     }
   }
 }
