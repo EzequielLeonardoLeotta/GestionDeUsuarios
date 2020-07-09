@@ -1,3 +1,4 @@
+using AutoMapper;
 using GestionDeUsuarios.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -18,6 +19,7 @@ namespace GestionDeUsuarios
     public void ConfigureServices(IServiceCollection services)
     {
       services.AddControllers();
+      services.AddAutoMapper(typeof(Startup));
       services.AddSingleton<IPersonaService, PersonaService>();
     }
 
