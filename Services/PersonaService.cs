@@ -63,16 +63,21 @@ namespace GestionDeUsuarios.Services
 
       try
       {
-        var getPersonaDto = await GetPerson(_mapper.Map<GetPersonaDto>(personaDto));
-        if (!getPersonaDto.Success)
-        {
-          await _context.Personas.AddAsync(_mapper.Map<Persona>(personaDto));
-          await _context.SaveChangesAsync();
-          serviceResponse.Data = _context.Personas.Select(p => _mapper.Map<PersonaDto>(p)).ToList();
-        }
+        if (personaDto.Edad < 18)
+          AddError(serviceResponse, null, "No se permite ingresar una persona que no sea mayor de edad");
         else
         {
-          AddError(serviceResponse, null, "No se permite duplicar personas");
+          var getPersonaDto = await GetPerson(_mapper.Map<GetPersonaDto>(personaDto));
+          if (!getPersonaDto.Success)
+          {
+            await _context.Personas.AddAsync(_mapper.Map<Persona>(personaDto));
+            await _context.SaveChangesAsync();
+            serviceResponse.Data = _context.Personas.Select(p => _mapper.Map<PersonaDto>(p)).ToList();
+          }
+          else
+          {
+            AddError(serviceResponse, null, "No se permite duplicar personas");
+          }
         }
       }
       catch (Exception e)
@@ -89,16 +94,20 @@ namespace GestionDeUsuarios.Services
 
       try
       {
-        var persona = await GetPersonModel(_mapper.Map<GetPersonaDto>(personaDto));
-        
-        persona.Nombre = personaDto.Nombre;
-        persona.Apellido = personaDto.Apellido;
-        persona.Contacto = personaDto.Contacto;
-        persona.Edad = personaDto.Edad;
+        if (personaDto.Edad < 18)
+          AddError(serviceResponse, null, "No se permite ingresar una edad menor a 18");
+        else
+        {
+          var persona = await GetPersonModel(_mapper.Map<GetPersonaDto>(personaDto));
+          persona.Nombre = personaDto.Nombre;
+          persona.Apellido = personaDto.Apellido;
+          persona.Contacto = personaDto.Contacto;
+          persona.Edad = personaDto.Edad;
 
-        _context.Personas.Update(persona);
-        await _context.SaveChangesAsync();
-        serviceResponse.Data = personaDto;
+          _context.Personas.Update(persona);
+          await _context.SaveChangesAsync();
+          serviceResponse.Data = personaDto;
+        }
       }
       catch (Exception e)
       {
@@ -146,7 +155,9 @@ namespace GestionDeUsuarios.Services
     private void AddError(ServiceResponse<PersonaDto> serviceResponse, Exception e, string message)
     {
       serviceResponse.Success = false;
-      if (e.Message.Contains("Enumerator failed to MoveNextAsync."))
+      if (e is null)
+        serviceResponse.Message = message;
+      else if (e.Message.Contains("Enumerator failed to MoveNextAsync."))
         serviceResponse.Message = message;
       else
         serviceResponse.Message = e.Message;
