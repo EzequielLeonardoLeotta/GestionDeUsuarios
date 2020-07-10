@@ -23,7 +23,7 @@ namespace GestionDeUsuarios
       services.AddDbContext<DataContext>(x => x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
       services.AddControllers();
       services.AddAutoMapper(typeof(Startup));
-      services.AddSingleton<IPersonaService, PersonaService>();
+      services.AddScoped<IPersonaService, PersonaService>();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

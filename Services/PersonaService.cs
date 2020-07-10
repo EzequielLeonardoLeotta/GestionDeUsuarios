@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
+using GestionDeUsuarios.Data;
 using GestionDeUsuarios.Dtos;
 using GestionDeUsuarios.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,33 +13,36 @@ namespace GestionDeUsuarios.Services
   public class PersonaService : IPersonaService
   {
     private readonly IMapper _mapper;
+    private readonly DataContext _context;
 
-    public PersonaService(IMapper mapper)
+    public PersonaService(IMapper mapper, DataContext context)
     {
       _mapper = mapper;
+      _context = context;
     }
-
-    private static List<Persona> personas = new List<Persona> { new Persona(), new Persona { Nombre = "Juan", Documento = "123" } };
 
     public async Task<ServiceResponse<List<PersonaDto>>> GetAllPersons()
     {
       ServiceResponse<List<PersonaDto>> serviceResponse = new ServiceResponse<List<PersonaDto>>();
-      serviceResponse.Data = personas.Select(p => _mapper.Map<PersonaDto>(p)).ToList();
+      List<Persona> dbPersonas = await _context.Personas.ToListAsync();
+      serviceResponse.Data = dbPersonas.Select(p => _mapper.Map<PersonaDto>(p)).ToList();
       return serviceResponse;
     }
 
     public async Task<ServiceResponse<PersonaDto>> GetPersonByDni(string documento)
     {
       ServiceResponse<PersonaDto> serviceResponse = new ServiceResponse<PersonaDto>();
-      serviceResponse.Data = _mapper.Map<PersonaDto>(personas.FirstOrDefault(p => p.Documento == documento));
+      Persona dbPersona = await _context.Personas.FirstOrDefaultAsync(p => p.Documento == documento);
+      serviceResponse.Data = _mapper.Map<PersonaDto>(dbPersona);
       return serviceResponse;
     }
     public async Task<ServiceResponse<List<PersonaDto>>> AddPerson(PersonaDto persona)
     {
-        ServiceResponse<List<PersonaDto>> serviceResponse = new ServiceResponse<List<PersonaDto>>();
-        personas.Add(_mapper.Map<Persona>(persona));
-        serviceResponse.Data = personas.Select(p => _mapper.Map<PersonaDto>(p)).ToList();
-        return serviceResponse;
+      ServiceResponse<List<PersonaDto>> serviceResponse = new ServiceResponse<List<PersonaDto>>();
+      await _context.Personas.AddAsync(_mapper.Map<Persona>(persona));
+      await _context.SaveChangesAsync();
+      serviceResponse.Data = _context.Personas.Select(p => _mapper.Map<PersonaDto>(p)).ToList();
+      return serviceResponse;
     }
 
     public async Task<ServiceResponse<PersonaDto>> UpdatePerson(UpdatePersonDto persona)
@@ -46,14 +51,15 @@ namespace GestionDeUsuarios.Services
 
       try
       {
-        Persona personaAux = personas.FirstOrDefault(p => p.Documento == persona.Documento);
+        Persona personaAux = await _context.Personas.FirstOrDefaultAsync(p => p.Documento == persona.Documento);
         personaAux.Nombre = persona.Nombre;
         personaAux.Apellido = persona.Apellido;
         personaAux.Contacto = persona.Contacto;
         personaAux.Edad = persona.Edad;
         personaAux.Sexo = persona.Sexo;
 
-        serviceResponse.Data = _mapper.Map<PersonaDto>(personaAux);
+        _context.Personas.Update(personaAux);
+        await _context.SaveChangesAsync();
       }
       catch (Exception e)
       {
@@ -70,9 +76,10 @@ namespace GestionDeUsuarios.Services
 
       try
       {
-        Persona personaAux = personas.First(p => p.Documento == documento);
-        personas.Remove(personaAux);
-        serviceResponse.Data = personas.Select(p => _mapper.Map<PersonaDto>(p)).ToList();
+        Persona personaAux = await _context.Personas.FirstAsync(p => p.Documento == documento);
+        _context.Personas.Remove(personaAux);
+        await _context.SaveChangesAsync();
+        serviceResponse.Data = _context.Personas.Select(p => _mapper.Map<PersonaDto>(p)).ToList();
       }
       catch (Exception e)
       {
