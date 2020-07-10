@@ -1,7 +1,9 @@
 using AutoMapper;
+using GestionDeUsuarios.Data;
 using GestionDeUsuarios.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,6 +20,7 @@ namespace GestionDeUsuarios
 
     public void ConfigureServices(IServiceCollection services)
     {
+      services.AddDbContext<DataContext>(x => x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
       services.AddControllers();
       services.AddAutoMapper(typeof(Startup));
       services.AddSingleton<IPersonaService, PersonaService>();
