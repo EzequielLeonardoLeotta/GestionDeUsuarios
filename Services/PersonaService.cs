@@ -2,6 +2,7 @@
 using GestionDeUsuarios.Data;
 using GestionDeUsuarios.Dtos;
 using GestionDeUsuarios.Models;
+using GestionDeUsuarios.Models.Response;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -24,42 +25,11 @@ namespace GestionDeUsuarios.Services
     public async Task<ServiceResponse<List<PersonaDto>>> GetAllPersons()
     {
       ServiceResponse<List<PersonaDto>> serviceResponse = new ServiceResponse<List<PersonaDto>>();
-      List<Persona> dbPersonas = await _context.Personas.ToListAsync();
-      serviceResponse.Data = dbPersonas.Select(p => _mapper.Map<PersonaDto>(p)).ToList();
-      return serviceResponse;
-    }
-
-    public async Task<ServiceResponse<PersonaDto>> GetPersonByDni(string documento)
-    {
-      ServiceResponse<PersonaDto> serviceResponse = new ServiceResponse<PersonaDto>();
-      Persona dbPersona = await _context.Personas.FirstOrDefaultAsync(p => p.Documento == documento);
-      serviceResponse.Data = _mapper.Map<PersonaDto>(dbPersona);
-      return serviceResponse;
-    }
-    public async Task<ServiceResponse<List<PersonaDto>>> AddPerson(PersonaDto persona)
-    {
-      ServiceResponse<List<PersonaDto>> serviceResponse = new ServiceResponse<List<PersonaDto>>();
-      await _context.Personas.AddAsync(_mapper.Map<Persona>(persona));
-      await _context.SaveChangesAsync();
-      serviceResponse.Data = _context.Personas.Select(p => _mapper.Map<PersonaDto>(p)).ToList();
-      return serviceResponse;
-    }
-
-    public async Task<ServiceResponse<PersonaDto>> UpdatePerson(UpdatePersonDto persona)
-    {
-      ServiceResponse<PersonaDto> serviceResponse = new ServiceResponse<PersonaDto>();
 
       try
       {
-        Persona personaAux = await _context.Personas.FirstOrDefaultAsync(p => p.Documento == persona.Documento);
-        personaAux.Nombre = persona.Nombre;
-        personaAux.Apellido = persona.Apellido;
-        personaAux.Contacto = persona.Contacto;
-        personaAux.Edad = persona.Edad;
-        personaAux.Sexo = persona.Sexo;
-
-        _context.Personas.Update(personaAux);
-        await _context.SaveChangesAsync();
+        List<Persona> personas = await _context.Personas.ToListAsync();
+        serviceResponse.Data = personas.Select(p => _mapper.Map<PersonaDto>(p)).ToList();
       }
       catch (Exception e)
       {
@@ -70,21 +40,122 @@ namespace GestionDeUsuarios.Services
       return serviceResponse;
     }
 
-    public async Task<ServiceResponse<List<PersonaDto>>> DeletePerson(string documento)
+    public async Task<ServiceResponse<PersonaDto>> GetPerson(GetPersonaDto getPersonaDto)
+    {
+      ServiceResponse<PersonaDto> serviceResponse = new ServiceResponse<PersonaDto>();
+
+      try
+      {
+        Persona persona = await _context.Personas.FirstAsync(p => p.Documento == getPersonaDto.Documento && p.Pais.Equals(getPersonaDto.Pais) && p.Sexo.Equals(getPersonaDto.Sexo) && p.TipoDocumento.Equals(getPersonaDto.TipoDocumento));
+        serviceResponse.Data = _mapper.Map<PersonaDto>(persona);
+        return serviceResponse;
+      }
+      catch (Exception e)
+      {
+        serviceResponse.Success = false;
+        if (e.Message.Contains("Enumerator failed to MoveNextAsync."))
+          serviceResponse.Message = "Persona no encontrada";
+        else
+          serviceResponse.Message = e.Message;
+      }
+
+      return serviceResponse;
+    }
+
+    public async Task<Persona> GetPersonModel(GetPersonaDto getPersonaDto)
+    {
+      Persona persona = new Persona();
+
+      try
+      {
+        persona = await _context.Personas.FirstAsync(p => p.Documento == getPersonaDto.Documento && p.Pais.Equals(getPersonaDto.Pais) && p.Sexo.Equals(getPersonaDto.Sexo) && p.TipoDocumento.Equals(getPersonaDto.TipoDocumento));
+      }
+      catch (Exception e)
+      {
+        throw e;
+      }
+
+      return persona;
+    }
+
+    public async Task<ServiceResponse<List<PersonaDto>>> AddPerson(PersonaDto personaDto)
     {
       ServiceResponse<List<PersonaDto>> serviceResponse = new ServiceResponse<List<PersonaDto>>();
 
       try
       {
-        Persona personaAux = await _context.Personas.FirstAsync(p => p.Documento == documento);
-        _context.Personas.Remove(personaAux);
+        var getPersonaDto = await GetPerson(_mapper.Map<GetPersonaDto>(personaDto));
+        if (!getPersonaDto.Success)
+        {
+          await _context.Personas.AddAsync(_mapper.Map<Persona>(personaDto));
+          await _context.SaveChangesAsync();
+          serviceResponse.Data = _context.Personas.Select(p => _mapper.Map<PersonaDto>(p)).ToList();
+        }
+        else
+        {
+          serviceResponse.Success = false;
+          serviceResponse.Message = "No se permite duplicar personas";
+        }
+      }
+      catch (Exception e)
+      {
+        serviceResponse.Success = false;
+        if (e.Message.Contains("Enumerator failed to MoveNextAsync."))
+          serviceResponse.Message = "Persona no encontrada";
+        else
+          serviceResponse.Message = e.Message;
+      }
+
+      return serviceResponse;
+    }
+
+    public async Task<ServiceResponse<PersonaDto>> UpdatePerson(PersonaDto personaDto)
+    {
+      ServiceResponse<PersonaDto> serviceResponse = new ServiceResponse<PersonaDto>();
+
+      try
+      {
+        var persona = await GetPersonModel(_mapper.Map<GetPersonaDto>(personaDto));
+        
+        persona.Nombre = personaDto.Nombre;
+        persona.Apellido = personaDto.Apellido;
+        persona.Contacto = personaDto.Contacto;
+        persona.Edad = personaDto.Edad;
+
+        _context.Personas.Update(persona);
+        await _context.SaveChangesAsync();
+        serviceResponse.Data = personaDto;
+      }
+      catch (Exception e)
+      {
+        serviceResponse.Success = false;
+        if (e.Message.Contains("Enumerator failed to MoveNextAsync."))
+          serviceResponse.Message = "Persona no encontrada";
+        else
+          serviceResponse.Message = e.Message;
+      }
+
+      return serviceResponse;
+    }
+
+    public async Task<ServiceResponse<List<PersonaDto>>> DeletePerson(GetPersonaDto getPersonaDto)
+    {
+      ServiceResponse<List<PersonaDto>> serviceResponse = new ServiceResponse<List<PersonaDto>>();
+
+      try
+      {
+        var persona = await GetPersonModel(getPersonaDto);
+        _context.Personas.Remove(persona);
         await _context.SaveChangesAsync();
         serviceResponse.Data = _context.Personas.Select(p => _mapper.Map<PersonaDto>(p)).ToList();
       }
       catch (Exception e)
       {
         serviceResponse.Success = false;
-        serviceResponse.Message = e.Message;
+        if (e.Message.Contains("Enumerator failed to MoveNextAsync."))
+          serviceResponse.Message = "Persona no encontrada";
+        else
+          serviceResponse.Message = e.Message;
       }
 
       return serviceResponse;

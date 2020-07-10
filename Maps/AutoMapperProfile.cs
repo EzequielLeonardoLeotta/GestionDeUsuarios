@@ -9,8 +9,10 @@ namespace GestionDeUsuarios.Maps
     public AutoMapperProfile()
     {
       CreateMap<Persona, PersonaDto>();
+      CreateMap<PersonaDto, GetPersonaDto>();
       CreateMap<PersonaDto, Persona>();
-      CreateMap<UpdatePersonDto, Persona>();
+      CreateMap<GetPersonaDto, Persona>();
+      CreateMap<Persona, GetPersonaDto>();
     }
   }
 }

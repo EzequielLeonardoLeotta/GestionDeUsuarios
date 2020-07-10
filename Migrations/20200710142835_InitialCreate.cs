@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace GestionDeUsuarios.Migrations
 {
@@ -12,14 +13,15 @@ namespace GestionDeUsuarios.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    TipoDocumento = table.Column<string>(nullable: true),
+                    TipoDocumento = table.Column<int>(nullable: false),
                     Documento = table.Column<string>(nullable: true),
-                    Pais = table.Column<string>(nullable: true),
-                    Sexo = table.Column<string>(nullable: true),
+                    Pais = table.Column<int>(nullable: false),
+                    Sexo = table.Column<int>(nullable: false),
                     Edad = table.Column<int>(nullable: false),
                     Contacto = table.Column<string>(nullable: true),
                     Nombre = table.Column<string>(nullable: true),
-                    Apellido = table.Column<string>(nullable: true)
+                    Apellido = table.Column<string>(nullable: true),
+                    FechaCreacion = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {

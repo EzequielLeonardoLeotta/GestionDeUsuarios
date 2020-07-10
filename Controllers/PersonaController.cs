@@ -1,5 +1,6 @@
 ﻿using GestionDeUsuarios.Dtos;
-using GestionDeUsuarios.Models;
+using GestionDeUsuarios.Models.Enums;
+using GestionDeUsuarios.Models.Response;
 using GestionDeUsuarios.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -18,28 +19,30 @@ namespace GestionDeUsuarios.Controllers
       _personaService = personaService;
     }
 
-    [HttpGet("GetAllPersons")]
+    [HttpGet]
     public async Task<IActionResult> GetAllPersons()
     {
       return Ok(await _personaService.GetAllPersons());
     }
 
-    [HttpGet("{documento}")]
-    public async Task<IActionResult> GetPersonByDni(string documento)
+
+    [HttpGet("tipoDocumento/{tipoDocumento}/documento/{documento}/pais/{pais}/sexo/{sexo}")]
+    public async Task<IActionResult> GetPerson(TipoDocumento tipoDocumento, string documento, Pais pais, Sexo sexo)
     {
-      return Ok(await _personaService.GetPersonByDni(documento));
+      GetPersonaDto getPersonaDto  = new GetPersonaDto { TipoDocumento = tipoDocumento, Documento = documento, Pais = pais, Sexo = sexo };
+      return Ok(await _personaService.GetPerson(getPersonaDto));
     }
 
     [HttpPost]
-    public async Task<IActionResult> AddPerson(PersonaDto persona)
+    public async Task<IActionResult> AddPerson(PersonaDto personaDto)
     {
-      return Ok(await _personaService.AddPerson(persona));
+      return Ok(await _personaService.AddPerson(personaDto));
     }
 
     [HttpPut]
-    public async Task<IActionResult> UpdatePerson(UpdatePersonDto persona)
+    public async Task<IActionResult> UpdatePerson(PersonaDto personaDto)
     {
-      ServiceResponse<PersonaDto> response = await _personaService.UpdatePerson(persona);
+      ServiceResponse<PersonaDto> response = await _personaService.UpdatePerson(personaDto);
       if (response.Data == null)
       {
         return NotFound(response);
@@ -47,10 +50,11 @@ namespace GestionDeUsuarios.Controllers
       return Ok(response);
     }
 
-    [HttpDelete("{documento}")]
-    public async Task<IActionResult> DeletePerson(string documento)
+    [HttpDelete("tipoDocumento/{tipoDocumento}/documento/{documento}/pais/{pais}/sexo/{sexo}")]
+    public async Task<IActionResult> DeletePerson(TipoDocumento tipoDocumento, string documento, Pais pais, Sexo sexo)
     {
-      ServiceResponse<List<PersonaDto>> response = await _personaService.DeletePerson(documento);
+      GetPersonaDto getPersonaDto = new GetPersonaDto { TipoDocumento = tipoDocumento, Documento = documento, Pais = pais, Sexo = sexo };
+      ServiceResponse<List<PersonaDto>> response = await _personaService.DeletePerson(getPersonaDto);
       if (response.Data == null)
       {
         return NotFound(response);

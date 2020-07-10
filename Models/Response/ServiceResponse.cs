@@ -1,4 +1,4 @@
-﻿namespace GestionDeUsuarios.Models
+﻿namespace GestionDeUsuarios.Models.Response
 {
   public class ServiceResponse<T>
   {
