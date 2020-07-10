@@ -1,4 +1,5 @@
 ﻿using GestionDeUsuarios.Dtos;
+using GestionDeUsuarios.Models;
 using GestionDeUsuarios.Models.Enums;
 using GestionDeUsuarios.Models.Response;
 using GestionDeUsuarios.Services;
@@ -25,12 +26,10 @@ namespace GestionDeUsuarios.Controllers
       return Ok(await _personaService.GetAllPersons());
     }
 
-
     [HttpGet("tipoDocumento/{tipoDocumento}/documento/{documento}/pais/{pais}/sexo/{sexo}")]
     public async Task<IActionResult> GetPerson(TipoDocumento tipoDocumento, string documento, Pais pais, Sexo sexo)
     {
-      GetPersonaDto getPersonaDto  = new GetPersonaDto { TipoDocumento = tipoDocumento, Documento = documento, Pais = pais, Sexo = sexo };
-      return Ok(await _personaService.GetPerson(getPersonaDto));
+      return Ok(await _personaService.GetPerson(ConvertToGetPersonaDto(tipoDocumento, documento, pais, sexo)));
     }
 
     [HttpPost]
@@ -53,13 +52,17 @@ namespace GestionDeUsuarios.Controllers
     [HttpDelete("tipoDocumento/{tipoDocumento}/documento/{documento}/pais/{pais}/sexo/{sexo}")]
     public async Task<IActionResult> DeletePerson(TipoDocumento tipoDocumento, string documento, Pais pais, Sexo sexo)
     {
-      GetPersonaDto getPersonaDto = new GetPersonaDto { TipoDocumento = tipoDocumento, Documento = documento, Pais = pais, Sexo = sexo };
-      ServiceResponse<List<PersonaDto>> response = await _personaService.DeletePerson(getPersonaDto);
+      ServiceResponse<List<PersonaDto>> response = await _personaService.DeletePerson(ConvertToGetPersonaDto(tipoDocumento, documento, pais, sexo));
       if (response.Data == null)
       {
         return NotFound(response);
       }
       return Ok(response);
+    }
+
+    public GetPersonaDto ConvertToGetPersonaDto(TipoDocumento tipoDocumento, string documento, Pais pais, Sexo sexo)
+    {
+      return new GetPersonaDto { TipoDocumento = tipoDocumento, Documento = documento, Pais = pais, Sexo = sexo };
     }
   }
 }
