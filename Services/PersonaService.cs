@@ -33,8 +33,7 @@ namespace GestionDeUsuarios.Services
       }
       catch (Exception e)
       {
-        serviceResponse.Success = false;
-        serviceResponse.Message = e.Message;
+        AddError(serviceResponse, e, e.Message);
       }
 
       return serviceResponse;
@@ -52,30 +51,10 @@ namespace GestionDeUsuarios.Services
       }
       catch (Exception e)
       {
-        serviceResponse.Success = false;
-        if (e.Message.Contains("Enumerator failed to MoveNextAsync."))
-          serviceResponse.Message = "Persona no encontrada";
-        else
-          serviceResponse.Message = e.Message;
+        AddError(serviceResponse, e, "Persona no encontrada");
       }
 
       return serviceResponse;
-    }
-
-    public async Task<Persona> GetPersonModel(GetPersonaDto getPersonaDto)
-    {
-      Persona persona = new Persona();
-
-      try
-      {
-        persona = await _context.Personas.FirstAsync(p => p.Documento == getPersonaDto.Documento && p.Pais.Equals(getPersonaDto.Pais) && p.Sexo.Equals(getPersonaDto.Sexo) && p.TipoDocumento.Equals(getPersonaDto.TipoDocumento));
-      }
-      catch (Exception e)
-      {
-        throw e;
-      }
-
-      return persona;
     }
 
     public async Task<ServiceResponse<List<PersonaDto>>> AddPerson(PersonaDto personaDto)
@@ -93,17 +72,12 @@ namespace GestionDeUsuarios.Services
         }
         else
         {
-          serviceResponse.Success = false;
-          serviceResponse.Message = "No se permite duplicar personas";
+          AddError(serviceResponse, null, "No se permite duplicar personas");
         }
       }
       catch (Exception e)
       {
-        serviceResponse.Success = false;
-        if (e.Message.Contains("Enumerator failed to MoveNextAsync."))
-          serviceResponse.Message = "Persona no encontrada";
-        else
-          serviceResponse.Message = e.Message;
+        AddError(serviceResponse, e, "Persona no encontrada");
       }
 
       return serviceResponse;
@@ -128,11 +102,7 @@ namespace GestionDeUsuarios.Services
       }
       catch (Exception e)
       {
-        serviceResponse.Success = false;
-        if (e.Message.Contains("Enumerator failed to MoveNextAsync."))
-          serviceResponse.Message = "Persona no encontrada";
-        else
-          serviceResponse.Message = e.Message;
+        AddError(serviceResponse, e, "Persona no encontrada");
       }
 
       return serviceResponse;
@@ -151,14 +121,46 @@ namespace GestionDeUsuarios.Services
       }
       catch (Exception e)
       {
-        serviceResponse.Success = false;
-        if (e.Message.Contains("Enumerator failed to MoveNextAsync."))
-          serviceResponse.Message = "Persona no encontrada";
-        else
-          serviceResponse.Message = e.Message;
+        AddError(serviceResponse, e, "Persona no encontrada");
       }
 
       return serviceResponse;
+    }
+
+    private async Task<Persona> GetPersonModel(GetPersonaDto getPersonaDto)
+    {
+      Persona persona = new Persona();
+
+      try
+      {
+        persona = await _context.Personas.FirstAsync(p => p.Documento == getPersonaDto.Documento && p.Pais.Equals(getPersonaDto.Pais) && p.Sexo.Equals(getPersonaDto.Sexo) && p.TipoDocumento.Equals(getPersonaDto.TipoDocumento));
+      }
+      catch (Exception e)
+      {
+        throw e;
+      }
+
+      return persona;
+    }
+
+    private void AddError(ServiceResponse<PersonaDto> serviceResponse, Exception e, string message)
+    {
+      serviceResponse.Success = false;
+      if (e.Message.Contains("Enumerator failed to MoveNextAsync."))
+        serviceResponse.Message = message;
+      else
+        serviceResponse.Message = e.Message;
+    }
+
+    private void AddError(ServiceResponse<List<PersonaDto>> serviceResponse, Exception e, string message)
+    {
+      serviceResponse.Success = false;
+      if (e is null)
+        serviceResponse.Message = message;
+      else if (e.Message.Contains("Enumerator failed to MoveNextAsync."))
+        serviceResponse.Message = message;
+      else
+        serviceResponse.Message = e.Message;
     }
   }
 }

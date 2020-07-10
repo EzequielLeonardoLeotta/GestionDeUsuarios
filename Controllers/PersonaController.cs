@@ -1,5 +1,4 @@
 ﻿using GestionDeUsuarios.Dtos;
-using GestionDeUsuarios.Models;
 using GestionDeUsuarios.Models.Enums;
 using GestionDeUsuarios.Models.Response;
 using GestionDeUsuarios.Services;
