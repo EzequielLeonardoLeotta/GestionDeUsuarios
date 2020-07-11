@@ -20,10 +20,8 @@ namespace GestionDeUsuarios.Controllers
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAllPersons()
-    {
-      return Ok(await _personaService.GetAllPersons());
-    }
+    public async Task<IActionResult> GetAllPersons() => Ok(await _personaService.GetAllPersons());
+    
 
     [HttpGet("tipoDocumento/{tipoDocumento}/documento/{documento}/pais/{pais}/sexo/{sexo}")]
     public async Task<IActionResult> GetPerson(TipoDocumento tipoDocumento, string documento, Pais pais, Sexo sexo)
@@ -32,10 +30,8 @@ namespace GestionDeUsuarios.Controllers
     }
 
     [HttpPost]
-    public async Task<IActionResult> AddPerson(PersonaDto personaDto)
-    {
-      return Ok(await _personaService.AddPerson(personaDto));
-    }
+    public async Task<IActionResult> AddPerson(PersonaDto personaDto) => Ok(await _personaService.AddPerson(personaDto));
+    
 
     [HttpPut]
     public async Task<IActionResult> UpdatePerson(PersonaDto personaDto)
@@ -59,15 +55,12 @@ namespace GestionDeUsuarios.Controllers
       return Ok(response);
     }
 
-    [HttpGet("estadisticas")]
-    public async Task<IActionResult> GetStatistics()
-    {
-      return Ok(await _personaService.GetStatistics());
-    }
-
     private GetPersonaDto ConvertToGetPersonaDto(TipoDocumento tipoDocumento, string documento, Pais pais, Sexo sexo)
     {
       return new GetPersonaDto { TipoDocumento = tipoDocumento, Documento = documento, Pais = pais, Sexo = sexo };
     }
+
+    [HttpGet("estadisticas")]
+    public async Task<IActionResult> GetStatistics() => Ok(await _personaService.GetStatistics());
   }
 }
