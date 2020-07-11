@@ -48,7 +48,11 @@ namespace GestionDeUsuarios.Services
       try
       {
         Persona persona = await _context.Personas.Include(p => p.Padre).FirstOrDefaultAsync(p => p.Id == id);
-        serviceResponse.Data = persona;
+        if(persona is null)
+          AddError(serviceResponse, null, "Persona no encontrada");
+        else
+          serviceResponse.Data = persona;
+
         return serviceResponse;
       }
       catch (Exception e)
@@ -244,49 +248,66 @@ namespace GestionDeUsuarios.Services
     {
       ServiceResponse<string> serviceResponse = new ServiceResponse<string>();
 
-      if (id1 != id2)
+      try
       {
-        var getPerson = await GetPerson(id2);
-        if (getPerson.Success) //existe el hijo
+        if (id1 != id2)
         {
-          var hijo = getPerson.Data;
-          if (hijo.Padre is null) //no tiene padre
+          var getPerson = await GetPerson(id2);
+          if (getPerson.Success) //existe el hijo
           {
-            var getFather = await GetPerson(id1);
-            if (getFather.Success) //existe el padre
+            var hijo = getPerson.Data;
+            if (hijo.Padre is null) //no tiene padre
             {
-              var padre = getFather.Data;
-              if (padre.Padre.Id != hijo.Id) //el padre del padre es distinto que el hijo?
+              var getFather = await GetPerson(id1);
+              if (getFather.Success) //existe el padre
               {
-                hijo.Padre = padre;
-                _context.Personas.Update(hijo);
-                await _context.SaveChangesAsync();
+                var padre = getFather.Data;
+                if (padre.Padre != null) //el padre tiene padre
+                {
+                  if (padre.Padre.Id != hijo.Id) //el padre del padre es distinto que el hijo?
+                  {
+                    hijo.Padre = padre;
+                    _context.Personas.Update(hijo);
+                    await _context.SaveChangesAsync();
+                    serviceResponse.Data = "El id: " + padre.Id.ToString() + " es padre del id: " + hijo.Id.ToString();
+                  }
+                  else
+                  {
+                    AddError(serviceResponse, null, "El padre no puede ser hijo del hijo");
+                  }
+                }
+                else
+                {
+                  hijo.Padre = padre;
+                  _context.Personas.Update(hijo);
+                  await _context.SaveChangesAsync();
+                  serviceResponse.Data = "El id: " + padre.Id.ToString() + " es padre del id: " + hijo.Id.ToString();
+                }
               }
               else
               {
-                AddError(serviceResponse, null, "El padre no puede ser hijo del hijo");
+                AddError(serviceResponse, null, "Padre no encontrado");
               }
             }
             else
             {
-              AddError(serviceResponse, null, "Padre no encontrado");
+              AddError(serviceResponse, null, "El hijo ya tiene un padre");
             }
           }
           else
           {
-            AddError(serviceResponse, null, "El hijo ya tiene un padre");
+            AddError(serviceResponse, null, "Hijo no encontrado");
           }
         }
         else
         {
-          AddError(serviceResponse, null, "Hijo no encontrado");
+          AddError(serviceResponse, null, "No puede ser padre de si mismo");
         }
       }
-      else
+      catch(Exception e)
       {
-        AddError(serviceResponse, null, "No puede ser padre de si mismo");
+        AddError(serviceResponse, e, e.Message);
       }
-
       return serviceResponse;
     }
   }
