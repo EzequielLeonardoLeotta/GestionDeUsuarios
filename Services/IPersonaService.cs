@@ -17,6 +17,9 @@ namespace GestionDeUsuarios.Services
     Task<ServiceResponse<List<PersonaDto>>> DeletePerson(GetPersonaDto getPersonaDto);
     #endregion
     Task<ServiceResponse<Dictionary<string, int>>> GetStatistics();
+    #region Relationaships
     Task<ServiceResponse<string>> AddFather(int id1, int id2);
+    Task<ServiceResponse<string>> GetRelationship(int id1, int id2);
+    #endregion
   }
 }

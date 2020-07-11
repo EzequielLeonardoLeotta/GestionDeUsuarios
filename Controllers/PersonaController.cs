@@ -67,10 +67,18 @@ namespace GestionDeUsuarios.Controllers
     [HttpGet("estadisticas")]
     public async Task<IActionResult> GetStatistics() => Ok(await _personaService.GetStatistics());
 
+    #region Relationships
     [HttpPost("{id1}/padre/{id2}")]
     public async Task<IActionResult> AddFather(int id1, int id2)
     {
       return Ok(await _personaService.AddFather(id1, id2));
     }
+
+    [HttpGet("relaciones/{id1}/{id2}")]
+    public async Task<IActionResult> GetRelationship(int id1, int id2)
+    {
+      return Ok(await _personaService.GetRelationship(id1, id2));
+    }
+    #endregion
   }
 }

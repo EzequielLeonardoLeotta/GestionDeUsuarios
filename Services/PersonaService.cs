@@ -244,6 +244,7 @@ namespace GestionDeUsuarios.Services
       return serviceResponse;
     }
 
+    #region Relationships
     public async Task<ServiceResponse<string>> AddFather(int id1, int id2)
     {
       ServiceResponse<string> serviceResponse = new ServiceResponse<string>();
@@ -262,27 +263,38 @@ namespace GestionDeUsuarios.Services
               if (getFather.Success) //existe el padre
               {
                 var padre = getFather.Data;
-                if (padre.Padre != null) //el padre tiene padre
-                {
-                  if (padre.Padre.Id != hijo.Id) //el padre del padre es distinto que el hijo?
-                  {
-                    hijo.Padre = padre;
-                    _context.Personas.Update(hijo);
-                    await _context.SaveChangesAsync();
-                    serviceResponse.Data = "El id: " + padre.Id.ToString() + " es padre del id: " + hijo.Id.ToString();
-                  }
-                  else
-                  {
-                    AddError(serviceResponse, null, "El padre no puede ser hijo del hijo");
-                  }
-                }
-                else
+                if (padre.Edad > hijo.Edad)
                 {
                   hijo.Padre = padre;
                   _context.Personas.Update(hijo);
                   await _context.SaveChangesAsync();
                   serviceResponse.Data = "El id: " + padre.Id.ToString() + " es padre del id: " + hijo.Id.ToString();
                 }
+                else
+                {
+                  AddError(serviceResponse, null, "El padre no puede ser padre de un antepasado");
+                }
+                //if (padre.Padre != null) //el padre tiene padre
+                //{
+                //  if (padre.Padre.Id != hijo.Id) //el padre del padre es distinto que el hijo?
+                //  {
+                //    hijo.Padre = padre;
+                //    _context.Personas.Update(hijo);
+                //    await _context.SaveChangesAsync();
+                //    serviceResponse.Data = "El id: " + padre.Id.ToString() + " es padre del id: " + hijo.Id.ToString();
+                //  }
+                //  else
+                //  {
+                //    AddError(serviceResponse, null, "El padre no puede ser hijo del hijo");
+                //  }
+                //}
+                //else
+                //{
+                //  hijo.Padre = padre;
+                //  _context.Personas.Update(hijo);
+                //  await _context.SaveChangesAsync();
+                //  serviceResponse.Data = "El id: " + padre.Id.ToString() + " es padre del id: " + hijo.Id.ToString();
+                //}
               }
               else
               {
@@ -310,5 +322,91 @@ namespace GestionDeUsuarios.Services
       }
       return serviceResponse;
     }
+
+    public async Task<ServiceResponse<string>> GetRelationship(int id1, int id2)
+    {
+      ServiceResponse<string> serviceResponse = new ServiceResponse<string>();
+
+      try
+      {
+        if (id1 != id2)
+        {
+          var getPerson1 = await GetPerson(id1);
+          if (getPerson1.Success) //existe la persona 1
+          {
+            var getPerson2 = await GetPerson(id2);
+            if (getPerson2.Success) //existe la persona 2
+            {
+              serviceResponse.Data = await VerifyRelationship(getPerson1.Data, getPerson2.Data);
+            }
+            else
+            {
+              AddError(serviceResponse, null, "No existe la persona 2");
+            }
+          }
+          else
+          {
+            AddError(serviceResponse, null, "No existe la persona 1");
+          }
+        }
+        else
+        {
+          AddError(serviceResponse, null, "No existen relaciones entre la misma persona");
+        }
+      }
+      catch (Exception e)
+      {
+        AddError(serviceResponse, e, e.Message);
+      }
+      return serviceResponse;
+    }
+
+    private async Task<string> VerifyRelationship(Persona persona1, Persona persona2)
+    {
+      string response = "";
+      //si tienen el mismo padre son hermanos
+      //si tienen dos padres distintos pero entre ellos son hermanos entonces son primos (para que sean hermanos los dos padres tienen que ser hijos del mismo padre)
+      //si uno de los dos es hijo del abuelo del otro uno es tio
+      Persona padre1 = persona1.Padre;
+      Persona padre2 = persona2.Padre;
+
+      if (padre1 != null && padre2 != null)
+      {
+        if (padre1.Equals(padre2))
+        {
+          response = "HERMAN@";
+        }
+        else
+        {
+          ServiceResponse<Persona> getAbuelo1 = new ServiceResponse<Persona>();
+          ServiceResponse<Persona> getAbuelo2 = new ServiceResponse<Persona>();
+          if (persona1.Padre != null)
+            getAbuelo1 = await GetPerson(persona1.Padre.Id);
+          if (persona2.Padre != null)
+            getAbuelo2 = await GetPerson(persona2.Padre.Id);
+
+          Persona abuelo1 = new Persona();
+          Persona abuelo2 = new Persona();
+          if (getAbuelo1.Data != null)
+            abuelo1 = getAbuelo1.Data.Padre;
+          if (getAbuelo2.Data != null)
+            abuelo2 = getAbuelo2.Data.Padre;
+
+          if (abuelo1.Equals(abuelo2))
+            response = "PRIM@";
+          else if (abuelo1.Equals(padre2) || abuelo2.Equals(padre1))
+            response = "TI@";
+          else
+            response = "NO TIENEN RELACION";
+        }
+      }
+      else
+      {
+        response = "NO TIENEN RELACION";
+      }
+
+      return response;
+    }
+    #endregion
   }
 }
