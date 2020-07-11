@@ -59,7 +59,13 @@ namespace GestionDeUsuarios.Controllers
       return Ok(response);
     }
 
-    public GetPersonaDto ConvertToGetPersonaDto(TipoDocumento tipoDocumento, string documento, Pais pais, Sexo sexo)
+    [HttpGet("estadisticas")]
+    public async Task<IActionResult> GetStatistics()
+    {
+      return Ok(await _personaService.GetStatistics());
+    }
+
+    private GetPersonaDto ConvertToGetPersonaDto(TipoDocumento tipoDocumento, string documento, Pais pais, Sexo sexo)
     {
       return new GetPersonaDto { TipoDocumento = tipoDocumento, Documento = documento, Pais = pais, Sexo = sexo };
     }

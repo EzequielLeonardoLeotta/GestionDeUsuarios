@@ -2,6 +2,7 @@
 using GestionDeUsuarios.Data;
 using GestionDeUsuarios.Dtos;
 using GestionDeUsuarios.Models;
+using GestionDeUsuarios.Models.Enums;
 using GestionDeUsuarios.Models.Response;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -22,6 +23,7 @@ namespace GestionDeUsuarios.Services
       _context = context;
     }
 
+    #region CRUD
     public async Task<ServiceResponse<List<PersonaDto>>> GetAllPersons()
     {
       ServiceResponse<List<PersonaDto>> serviceResponse = new ServiceResponse<List<PersonaDto>>();
@@ -172,6 +174,31 @@ namespace GestionDeUsuarios.Services
         serviceResponse.Message = message;
       else
         serviceResponse.Message = e.Message;
+    }
+    #endregion
+
+    public async Task<ServiceResponse<Dictionary<string, int>>> GetStatistics()
+    {
+      ServiceResponse<Dictionary<string, int>> serviceResponse = new ServiceResponse<Dictionary<string, int>>();
+
+      Dictionary<string, int> statistics = new Dictionary<string, int>(3);
+
+      var getAllPersons = await GetAllPersons();
+      var allPersons = getAllPersons.Data;
+
+      int quantityWomens = allPersons.Where(p => p.Sexo.Equals(Sexo.Femenino.ToString())).Count();
+      int quantityMens = allPersons.Where(p => p.Sexo.Equals(Sexo.Masculino.ToString())).Count();
+
+      int quantityArgentines = allPersons.Where(p => p.Pais.Equals(Pais.Argentina.ToString())).Count();
+      int percentageArgentines = (quantityArgentines * 100) / allPersons.Count();
+
+      statistics.Add("cantidad_mujeres", quantityWomens);
+      statistics.Add("cantidad_hombres", quantityMens);
+      statistics.Add("porcentaje_argentinos", percentageArgentines);
+
+      serviceResponse.Data = statistics;
+
+      return serviceResponse;
     }
   }
 }
