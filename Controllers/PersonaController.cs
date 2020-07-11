@@ -19,9 +19,12 @@ namespace GestionDeUsuarios.Controllers
       _personaService = personaService;
     }
 
+    #region CRUD
     [HttpGet]
     public async Task<IActionResult> GetAllPersons() => Ok(await _personaService.GetAllPersons());
-    
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetPerson(int id) => Ok(await _personaService.GetPerson(id));
 
     [HttpGet("tipoDocumento/{tipoDocumento}/documento/{documento}/pais/{pais}/sexo/{sexo}")]
     public async Task<IActionResult> GetPerson(TipoDocumento tipoDocumento, string documento, Pais pais, Sexo sexo)
@@ -59,8 +62,15 @@ namespace GestionDeUsuarios.Controllers
     {
       return new GetPersonaDto { TipoDocumento = tipoDocumento, Documento = documento, Pais = pais, Sexo = sexo };
     }
+    #endregion
 
     [HttpGet("estadisticas")]
     public async Task<IActionResult> GetStatistics() => Ok(await _personaService.GetStatistics());
+
+    [HttpPost("{id1}/padre/{id2}")]
+    public async Task<IActionResult> AddFather(int id1, int id2)
+    {
+      return Ok(await _personaService.AddFather(id1, id2));
+    }
   }
 }

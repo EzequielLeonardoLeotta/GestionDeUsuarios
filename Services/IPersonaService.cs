@@ -1,4 +1,5 @@
 ﻿using GestionDeUsuarios.Dtos;
+using GestionDeUsuarios.Models;
 using GestionDeUsuarios.Models.Response;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -9,11 +10,13 @@ namespace GestionDeUsuarios.Services
   {
     #region CRUD
     Task<ServiceResponse<List<PersonaDto>>> GetAllPersons();
+    Task<ServiceResponse<Persona>> GetPerson(int id);
     Task<ServiceResponse<PersonaDto>> GetPerson(GetPersonaDto getPersonaDto);
     Task<ServiceResponse<List<PersonaDto>>> AddPerson(PersonaDto personaDto);
     Task<ServiceResponse<PersonaDto>> UpdatePerson(PersonaDto personaDto);
     Task<ServiceResponse<List<PersonaDto>>> DeletePerson(GetPersonaDto getPersonaDto);
     #endregion
     Task<ServiceResponse<Dictionary<string, int>>> GetStatistics();
+    Task<ServiceResponse<string>> AddFather(int id1, int id2);
   }
 }

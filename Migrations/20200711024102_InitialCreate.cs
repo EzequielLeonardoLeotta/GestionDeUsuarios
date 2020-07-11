@@ -21,12 +21,24 @@ namespace GestionDeUsuarios.Migrations
                     Contacto = table.Column<string>(nullable: true),
                     Nombre = table.Column<string>(nullable: true),
                     Apellido = table.Column<string>(nullable: true),
-                    FechaCreacion = table.Column<DateTime>(nullable: false)
+                    FechaCreacion = table.Column<DateTime>(nullable: false),
+                    PadreId = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Personas", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Personas_Personas_PadreId",
+                        column: x => x.PadreId,
+                        principalTable: "Personas",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Personas_PadreId",
+                table: "Personas",
+                column: "PadreId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

@@ -41,6 +41,24 @@ namespace GestionDeUsuarios.Services
       return serviceResponse;
     }
 
+    public async Task<ServiceResponse<Persona>> GetPerson(int id)
+    {
+      ServiceResponse<Persona> serviceResponse = new ServiceResponse<Persona>();
+
+      try
+      {
+        Persona persona = await _context.Personas.Include(p => p.Padre).FirstOrDefaultAsync(p => p.Id == id);
+        serviceResponse.Data = persona;
+        return serviceResponse;
+      }
+      catch (Exception e)
+      {
+        AddError(serviceResponse, e, "Persona no encontrada");
+      }
+
+      return serviceResponse;
+    }
+
     public async Task<ServiceResponse<PersonaDto>> GetPerson(GetPersonaDto getPersonaDto)
     {
       ServiceResponse<PersonaDto> serviceResponse = new ServiceResponse<PersonaDto>();
@@ -49,7 +67,6 @@ namespace GestionDeUsuarios.Services
       {
         Persona persona = await _context.Personas.FirstAsync(p => p.Documento == getPersonaDto.Documento && p.Pais.Equals(getPersonaDto.Pais) && p.Sexo.Equals(getPersonaDto.Sexo) && p.TipoDocumento.Equals(getPersonaDto.TipoDocumento));
         serviceResponse.Data = _mapper.Map<PersonaDto>(persona);
-        return serviceResponse;
       }
       catch (Exception e)
       {
@@ -175,6 +192,28 @@ namespace GestionDeUsuarios.Services
       else
         serviceResponse.Message = e.Message;
     }
+
+    private void AddError(ServiceResponse<Persona> serviceResponse, Exception e, string message)
+    {
+      serviceResponse.Success = false;
+      if (e is null)
+        serviceResponse.Message = message;
+      else if (e.Message.Contains("Enumerator failed to MoveNextAsync."))
+        serviceResponse.Message = message;
+      else
+        serviceResponse.Message = e.Message;
+    }
+
+    private void AddError(ServiceResponse<string> serviceResponse, Exception e, string message)
+    {
+      serviceResponse.Success = false;
+      if (e is null)
+        serviceResponse.Message = message;
+      else if (e.Message.Contains("Enumerator failed to MoveNextAsync."))
+        serviceResponse.Message = message;
+      else
+        serviceResponse.Message = e.Message;
+    }
     #endregion
 
     public async Task<ServiceResponse<Dictionary<string, int>>> GetStatistics()
@@ -197,6 +236,56 @@ namespace GestionDeUsuarios.Services
       statistics.Add("porcentaje_argentinos", percentageArgentines);
 
       serviceResponse.Data = statistics;
+
+      return serviceResponse;
+    }
+
+    public async Task<ServiceResponse<string>> AddFather(int id1, int id2)
+    {
+      ServiceResponse<string> serviceResponse = new ServiceResponse<string>();
+
+      if (id1 != id2)
+      {
+        var getPerson = await GetPerson(id2);
+        if (getPerson.Success) //existe el hijo
+        {
+          var hijo = getPerson.Data;
+          if (hijo.Padre is null) //no tiene padre
+          {
+            var getFather = await GetPerson(id1);
+            if (getFather.Success) //existe el padre
+            {
+              var padre = getFather.Data;
+              if (padre.Padre.Id != hijo.Id) //el padre del padre es distinto que el hijo?
+              {
+                hijo.Padre = padre;
+                _context.Personas.Update(hijo);
+                await _context.SaveChangesAsync();
+              }
+              else
+              {
+                AddError(serviceResponse, null, "El padre no puede ser hijo del hijo");
+              }
+            }
+            else
+            {
+              AddError(serviceResponse, null, "Padre no encontrado");
+            }
+          }
+          else
+          {
+            AddError(serviceResponse, null, "El hijo ya tiene un padre");
+          }
+        }
+        else
+        {
+          AddError(serviceResponse, null, "Hijo no encontrado");
+        }
+      }
+      else
+      {
+        AddError(serviceResponse, null, "No puede ser padre de si mismo");
+      }
 
       return serviceResponse;
     }

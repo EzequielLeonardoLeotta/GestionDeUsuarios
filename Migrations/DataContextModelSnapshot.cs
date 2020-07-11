@@ -44,6 +44,9 @@ namespace GestionDeUsuarios.Migrations
                     b.Property<string>("Nombre")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("PadreId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Pais")
                         .HasColumnType("int");
 
@@ -55,7 +58,16 @@ namespace GestionDeUsuarios.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("PadreId");
+
                     b.ToTable("Personas");
+                });
+
+            modelBuilder.Entity("GestionDeUsuarios.Models.Persona", b =>
+                {
+                    b.HasOne("GestionDeUsuarios.Models.Persona", "Padre")
+                        .WithOne()
+                        .HasForeignKey("PadreId");
                 });
 #pragma warning restore 612, 618
         }
