@@ -274,27 +274,6 @@ namespace GestionDeUsuarios.Services
                 {
                   AddError(serviceResponse, null, "El padre no puede ser padre de un antepasado");
                 }
-                //if (padre.Padre != null) //el padre tiene padre
-                //{
-                //  if (padre.Padre.Id != hijo.Id) //el padre del padre es distinto que el hijo?
-                //  {
-                //    hijo.Padre = padre;
-                //    _context.Personas.Update(hijo);
-                //    await _context.SaveChangesAsync();
-                //    serviceResponse.Data = "El id: " + padre.Id.ToString() + " es padre del id: " + hijo.Id.ToString();
-                //  }
-                //  else
-                //  {
-                //    AddError(serviceResponse, null, "El padre no puede ser hijo del hijo");
-                //  }
-                //}
-                //else
-                //{
-                //  hijo.Padre = padre;
-                //  _context.Personas.Update(hijo);
-                //  await _context.SaveChangesAsync();
-                //  serviceResponse.Data = "El id: " + padre.Id.ToString() + " es padre del id: " + hijo.Id.ToString();
-                //}
               }
               else
               {
@@ -336,13 +315,9 @@ namespace GestionDeUsuarios.Services
           {
             var getPerson2 = await GetPerson(id2);
             if (getPerson2.Success) //existe la persona 2
-            {
               serviceResponse.Data = await VerifyRelationship(getPerson1.Data, getPerson2.Data);
-            }
             else
-            {
               AddError(serviceResponse, null, "No existe la persona 2");
-            }
           }
           else
           {
