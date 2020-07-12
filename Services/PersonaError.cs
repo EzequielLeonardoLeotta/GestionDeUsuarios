@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace GestionDeUsuarios.Services
 {
-  public class PersonaError
+  public class PersonaError : IPersonaError
   {
     public void AddError(ServiceResponse<Dictionary<string, int>> serviceResponse, Exception e, string message)
     {
