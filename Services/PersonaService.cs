@@ -195,7 +195,7 @@ namespace GestionDeUsuarios.Services
         int quantityArgentines = allPersons.Where(p => p.Pais.Equals(Pais.Argentina.ToString())).Count();
         int quantityPersons = allPersons.Count();
         int percentageArgentines = 0;
-        if (quantityPersons == 0)
+        if (quantityPersons != 0)
           percentageArgentines = (quantityArgentines * 100) / allPersons.Count();
         
         statistics.Add("cantidad_mujeres", quantityWomens);
