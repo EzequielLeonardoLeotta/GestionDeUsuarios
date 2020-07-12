@@ -16,11 +16,13 @@ namespace GestionDeUsuarios.Services
   {
     private readonly IMapper _mapper;
     private readonly DataContext _context;
+    private readonly PersonaError _personaError;
 
-    public PersonaService(IMapper mapper, DataContext context)
+    public PersonaService(IMapper mapper, DataContext context, PersonaError personaError)
     {
       _mapper = mapper;
       _context = context;
+      _personaError = personaError;
     }
 
     #region CRUD
@@ -35,7 +37,7 @@ namespace GestionDeUsuarios.Services
       }
       catch (Exception e)
       {
-        AddError(serviceResponse, e, e.Message);
+        _personaError.AddError(serviceResponse, e, e.Message);
       }
 
       return serviceResponse;
@@ -49,7 +51,7 @@ namespace GestionDeUsuarios.Services
       {
         Persona persona = await _context.Personas.Include(p => p.Padre).FirstOrDefaultAsync(p => p.Id == id);
         if(persona is null)
-          AddError(serviceResponse, null, "Persona no encontrada");
+          _personaError.AddError(serviceResponse, null, "Persona no encontrada");
         else
           serviceResponse.Data = persona;
 
@@ -57,7 +59,7 @@ namespace GestionDeUsuarios.Services
       }
       catch (Exception e)
       {
-        AddError(serviceResponse, e, "Persona no encontrada");
+        _personaError.AddError(serviceResponse, e, "Persona no encontrada");
       }
 
       return serviceResponse;
@@ -74,7 +76,7 @@ namespace GestionDeUsuarios.Services
       }
       catch (Exception e)
       {
-        AddError(serviceResponse, e, "Persona no encontrada");
+        _personaError.AddError(serviceResponse, e, "Persona no encontrada");
       }
 
       return serviceResponse;
@@ -87,7 +89,7 @@ namespace GestionDeUsuarios.Services
       try
       {
         if (personaDto.Edad < 18)
-          AddError(serviceResponse, null, "No se permite ingresar una persona que no sea mayor de edad");
+          _personaError.AddError(serviceResponse, null, "No se permite ingresar una persona que no sea mayor de edad");
         else
         {
           var getPersonaDto = await GetPerson(_mapper.Map<GetPersonaDto>(personaDto));
@@ -99,13 +101,13 @@ namespace GestionDeUsuarios.Services
           }
           else
           {
-            AddError(serviceResponse, null, "No se permite duplicar personas");
+            _personaError.AddError(serviceResponse, null, "No se permite duplicar personas");
           }
         }
       }
       catch (Exception e)
       {
-        AddError(serviceResponse, e, "Persona no encontrada");
+        _personaError.AddError(serviceResponse, e, "Persona no encontrada");
       }
 
       return serviceResponse;
@@ -118,7 +120,7 @@ namespace GestionDeUsuarios.Services
       try
       {
         if (personaDto.Edad < 18)
-          AddError(serviceResponse, null, "No se permite ingresar una edad menor a 18");
+          _personaError.AddError(serviceResponse, null, "No se permite ingresar una edad menor a 18");
         else
         {
           var persona = await GetPersonModel(_mapper.Map<GetPersonaDto>(personaDto));
@@ -134,7 +136,7 @@ namespace GestionDeUsuarios.Services
       }
       catch (Exception e)
       {
-        AddError(serviceResponse, e, "Persona no encontrada");
+        _personaError.AddError(serviceResponse, e, "Persona no encontrada");
       }
 
       return serviceResponse;
@@ -153,7 +155,7 @@ namespace GestionDeUsuarios.Services
       }
       catch (Exception e)
       {
-        AddError(serviceResponse, e, "Persona no encontrada");
+        _personaError.AddError(serviceResponse, e, "Persona no encontrada");
       }
 
       return serviceResponse;
@@ -174,72 +176,38 @@ namespace GestionDeUsuarios.Services
 
       return persona;
     }
-
-    private void AddError(ServiceResponse<PersonaDto> serviceResponse, Exception e, string message)
-    {
-      serviceResponse.Success = false;
-      if (e is null)
-        serviceResponse.Message = message;
-      else if (e.Message.Contains("Enumerator failed to MoveNextAsync."))
-        serviceResponse.Message = message;
-      else
-        serviceResponse.Message = e.Message;
-    }
-
-    private void AddError(ServiceResponse<List<PersonaDto>> serviceResponse, Exception e, string message)
-    {
-      serviceResponse.Success = false;
-      if (e is null)
-        serviceResponse.Message = message;
-      else if (e.Message.Contains("Enumerator failed to MoveNextAsync."))
-        serviceResponse.Message = message;
-      else
-        serviceResponse.Message = e.Message;
-    }
-
-    private void AddError(ServiceResponse<Persona> serviceResponse, Exception e, string message)
-    {
-      serviceResponse.Success = false;
-      if (e is null)
-        serviceResponse.Message = message;
-      else if (e.Message.Contains("Enumerator failed to MoveNextAsync."))
-        serviceResponse.Message = message;
-      else
-        serviceResponse.Message = e.Message;
-    }
-
-    private void AddError(ServiceResponse<string> serviceResponse, Exception e, string message)
-    {
-      serviceResponse.Success = false;
-      if (e is null)
-        serviceResponse.Message = message;
-      else if (e.Message.Contains("Enumerator failed to MoveNextAsync."))
-        serviceResponse.Message = message;
-      else
-        serviceResponse.Message = e.Message;
-    }
     #endregion
 
     public async Task<ServiceResponse<Dictionary<string, int>>> GetStatistics()
     {
       ServiceResponse<Dictionary<string, int>> serviceResponse = new ServiceResponse<Dictionary<string, int>>();
 
-      Dictionary<string, int> statistics = new Dictionary<string, int>(3);
+      try
+      {
+        Dictionary<string, int> statistics = new Dictionary<string, int>(3);
 
-      var getAllPersons = await GetAllPersons();
-      var allPersons = getAllPersons.Data;
+        var getAllPersons = await GetAllPersons();
+        var allPersons = getAllPersons.Data;
 
-      int quantityWomens = allPersons.Where(p => p.Sexo.Equals(Sexo.Femenino.ToString())).Count();
-      int quantityMens = allPersons.Where(p => p.Sexo.Equals(Sexo.Masculino.ToString())).Count();
+        int quantityWomens = allPersons.Where(p => p.Sexo.Equals(Sexo.Femenino.ToString())).Count();
+        int quantityMens = allPersons.Where(p => p.Sexo.Equals(Sexo.Masculino.ToString())).Count();
 
-      int quantityArgentines = allPersons.Where(p => p.Pais.Equals(Pais.Argentina.ToString())).Count();
-      int percentageArgentines = (quantityArgentines * 100) / allPersons.Count();
+        int quantityArgentines = allPersons.Where(p => p.Pais.Equals(Pais.Argentina.ToString())).Count();
+        int quantityPersons = allPersons.Count();
+        int percentageArgentines = 0;
+        if (quantityPersons != 0)
+          percentageArgentines = (quantityArgentines * 100) / allPersons.Count();
+        
+        statistics.Add("cantidad_mujeres", quantityWomens);
+        statistics.Add("cantidad_hombres", quantityMens);
+        statistics.Add("porcentaje_argentinos", percentageArgentines);
 
-      statistics.Add("cantidad_mujeres", quantityWomens);
-      statistics.Add("cantidad_hombres", quantityMens);
-      statistics.Add("porcentaje_argentinos", percentageArgentines);
-
-      serviceResponse.Data = statistics;
+        serviceResponse.Data = statistics;
+      }
+      catch (Exception e)
+      {
+        _personaError.AddError(serviceResponse, e, e.Message);
+      }
 
       return serviceResponse;
     }
@@ -272,32 +240,32 @@ namespace GestionDeUsuarios.Services
                 }
                 else
                 {
-                  AddError(serviceResponse, null, "El padre no puede ser padre de un antepasado");
+                  _personaError.AddError(serviceResponse, null, "El padre no puede ser padre de un antepasado");
                 }
               }
               else
               {
-                AddError(serviceResponse, null, "Padre no encontrado");
+                _personaError.AddError(serviceResponse, null, "Padre no encontrado");
               }
             }
             else
             {
-              AddError(serviceResponse, null, "El hijo ya tiene un padre");
+              _personaError.AddError(serviceResponse, null, "El hijo ya tiene un padre");
             }
           }
           else
           {
-            AddError(serviceResponse, null, "Hijo no encontrado");
+            _personaError.AddError(serviceResponse, null, "Hijo no encontrado");
           }
         }
         else
         {
-          AddError(serviceResponse, null, "No puede ser padre de si mismo");
+          _personaError.AddError(serviceResponse, null, "No puede ser padre de si mismo");
         }
       }
       catch(Exception e)
       {
-        AddError(serviceResponse, e, e.Message);
+        _personaError.AddError(serviceResponse, e, e.Message);
       }
       return serviceResponse;
     }
@@ -317,21 +285,21 @@ namespace GestionDeUsuarios.Services
             if (getPerson2.Success) //existe la persona 2
               serviceResponse.Data = await VerifyRelationship(getPerson1.Data, getPerson2.Data);
             else
-              AddError(serviceResponse, null, "No existe la persona 2");
+              _personaError.AddError(serviceResponse, null, "No existe la persona 2");
           }
           else
           {
-            AddError(serviceResponse, null, "No existe la persona 1");
+            _personaError.AddError(serviceResponse, null, "No existe la persona 1");
           }
         }
         else
         {
-          AddError(serviceResponse, null, "No existen relaciones entre la misma persona");
+          _personaError.AddError(serviceResponse, null, "No existen relaciones entre la misma persona");
         }
       }
       catch (Exception e)
       {
-        AddError(serviceResponse, e, e.Message);
+        _personaError.AddError(serviceResponse, e, e.Message);
       }
       return serviceResponse;
     }

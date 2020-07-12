@@ -14,13 +14,13 @@ namespace GestionDeUsuarios.Migrations
                     Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     TipoDocumento = table.Column<int>(nullable: false),
-                    Documento = table.Column<string>(nullable: true),
+                    Documento = table.Column<string>(nullable: false),
                     Pais = table.Column<int>(nullable: false),
                     Sexo = table.Column<int>(nullable: false),
                     Edad = table.Column<int>(nullable: false),
-                    Contacto = table.Column<string>(nullable: true),
-                    Nombre = table.Column<string>(nullable: true),
-                    Apellido = table.Column<string>(nullable: true),
+                    Contacto = table.Column<string>(nullable: false),
+                    Nombre = table.Column<string>(nullable: false),
+                    Apellido = table.Column<string>(nullable: false),
                     FechaCreacion = table.Column<DateTime>(nullable: false),
                     PadreId = table.Column<int>(nullable: true)
                 },

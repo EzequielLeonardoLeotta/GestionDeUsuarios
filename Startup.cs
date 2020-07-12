@@ -23,6 +23,7 @@ namespace GestionDeUsuarios
       services.AddDbContext<DataContext>(x => x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
       services.AddControllers();
       services.AddAutoMapper(typeof(Startup));
+      services.AddSingleton<PersonaError>();
       services.AddScoped<IPersonaService, PersonaService>();
     }
 
