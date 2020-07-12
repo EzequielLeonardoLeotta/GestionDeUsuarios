@@ -193,8 +193,11 @@ namespace GestionDeUsuarios.Services
         int quantityMens = allPersons.Where(p => p.Sexo.Equals(Sexo.Masculino.ToString())).Count();
 
         int quantityArgentines = allPersons.Where(p => p.Pais.Equals(Pais.Argentina.ToString())).Count();
-        int percentageArgentines = (quantityArgentines * 100) / allPersons.Count();
-
+        int quantityPersons = allPersons.Count();
+        int percentageArgentines = 0;
+        if (quantityPersons == 0)
+          percentageArgentines = (quantityArgentines * 100) / allPersons.Count();
+        
         statistics.Add("cantidad_mujeres", quantityWomens);
         statistics.Add("cantidad_hombres", quantityMens);
         statistics.Add("porcentaje_argentinos", percentageArgentines);
